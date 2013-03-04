@@ -33,12 +33,4 @@ class ActiveLoggerGenerator < Rails::Generators::Base
     
   end
   
-  def add_relation
-    
-    inject_into_file 'app/models/user.rb', :after => /ActiveRecord::Base\n/ do
-      "\n  enable_logging #{logger_class_name}\n"
-    end
-    
-  end
-  
 end

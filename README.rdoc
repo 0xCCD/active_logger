@@ -1,3 +1,21 @@
 = ActiveLogger
 
 This project rocks and uses MIT-LICENSE.
+
+= Installation
+
+gem 'active_logger', :git=>"git://github.com/0xCCD/active_logger.git"
+
+= Generator
+
+rails g active_logger MyHistory
+
+The active_support gem creates automatically MyHistory Model and MyHistoryValue Model
+
+= Model
+
+Every Model which you would be logged, needs an entry like this
+
+enable_logging
+or 
+enable_logging ignore: ["created_at", "updated_at"]

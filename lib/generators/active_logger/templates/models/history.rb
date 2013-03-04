@@ -4,7 +4,7 @@ module ActiveLogger
     has_many <%= ":#{logger_class_name.underscore}" %>_values
     
     def active_logger_history_values
-      <%= logger_class_name.pluralize.underscore %>_value
+      <%= logger_class_name.underscore %>_values
     end
     
   end

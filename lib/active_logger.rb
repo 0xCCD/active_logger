@@ -27,8 +27,8 @@ module ActiveLogger
       
       self.fields_to_ignore = _default[:ignore]
       send :include, InstanceMethods
-      before_save :record_changes
-      before_destroy :remove_object
+      before_save :record_changes_or_creation
+      before_destroy :record_destroy
       
       has_many :"#{_default[:class_name].pluralize.underscore}", :foreign_key=>:logged_for_id, :class_name => "ActiveLogger::#{_default[:class_name]}", :conditions => { :logged_for => self.name }
       
@@ -50,7 +50,7 @@ module ActiveLogger
       "active_logger.destroy.#{self.class.name.singularize.underscore}"
     end
     
-    def record_changes
+    def record_changes_or_creation
       
       before = changed_attributes.dup
 
@@ -71,7 +71,7 @@ module ActiveLogger
 
     end # record_changes
     
-    def remove_object
+    def record_destroy
       
       before = changed_attributes.dup
       add_log_entry({:user_id=>::ActiveLogger::User.user_id, :logged_for=>self.class.name, :logged_for_id=>read_attribute("id"), :i18n=>true, :body=>i18n_destroy}, {:obj=>before.to_yaml, :obj2=>"destroyed"})
