@@ -15,3 +15,18 @@ gem "jquery-rails"
 
 # To use debugger
 # gem 'debugger'
+
+group :development, :test do
+  gem 'ffaker'
+  gem 'rspec-rails'
+  gem 'factory_girl_rails'
+end
+
+group :test do
+  gem 'capybara'
+  gem 'launchy'
+  gem "shoulda-matchers"
+  gem "spork-rails"
+  gem "database_cleaner"
+  gem "generator_spec"
+end
