@@ -23,16 +23,17 @@ module ActiveLogger
 
       _default = {class_name: ::ActiveLogger.history_class.to_s.split("::").last, ignore: ["created_at", "updated_at"]}.merge(options)
 
-      cattr_accessor :fields_to_ignore, :history_symbol
+      cattr_accessor :fields_to_ignore, :history_method, :history_value_method
 
       self.fields_to_ignore = _default[:ignore]
-      self.history_symbol = :"#{_default[:class_name].pluralize.underscore}"
+      self.history_method = :"#{_default[:class_name].pluralize.underscore}"
+      self.history_value_method = :"#{_default[:class_name].underscore}_values"
 
       send :include, InstanceMethods
       before_save :record_creation_or_changes
       before_destroy :record_destroy
 
-      has_many self.history_symbol, :foreign_key=>:logged_for_id, :class_name => "ActiveLogger::#{_default[:class_name]}", :conditions => { :logged_for => "#{self.name}" }
+      has_many self.history_method, :foreign_key=>:logged_for_id, :class_name => "ActiveLogger::#{_default[:class_name]}", :conditions => { :logged_for => "#{self.name}" }
 
     end # enable_logging
 
@@ -57,7 +58,7 @@ module ActiveLogger
       before, changed = fetch_changes
 
       if new_record?
-        self.send(self.history_symbol).send(:<<, add_log_entry({:user_id=>::ActiveLogger::User.user_id, :logged_for=>self.class.name, :i18n=>true, :body=>i18n_create}, {:obj=>before.to_yaml, :obj2=>changed.to_yaml}))
+        self.send(self.history_method).send(:<<, add_log_entry({:user_id=>::ActiveLogger::User.user_id, :logged_for=>self.class.name, :i18n=>true, :body=>i18n_create}, {:obj=>before.to_yaml, :obj2=>changed.to_yaml}))
       else
         add_log_entry({:user_id=>::ActiveLogger::User.user_id, :logged_for=>self.class.name, :logged_for_id=>read_attribute("id"), :i18n=>true, :body=>i18n_update}, {:obj=>before.to_yaml, :obj2=>changed.to_yaml}) unless before.empty?
       end
@@ -84,7 +85,7 @@ module ActiveLogger
           ahv = ::ActiveLogger.history_value_class.new
           ahv.key = key.to_s
           ahv.value = val
-          uh.active_logger_history_values << ahv
+          uh.send(self.history_value_method).send(:<<, ahv)
         end
       end
 
