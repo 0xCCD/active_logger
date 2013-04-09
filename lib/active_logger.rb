@@ -17,11 +17,20 @@ module ActiveLogger
     generators.active_logger :active_logger
   end
 
+  class << self
+    def get_history_class
+      ::ActiveLogger.history_class.call
+    end
+    def get_history_value_class
+      ::ActiveLogger.history_value_class.call
+    end
+  end
+
   module ClassMethods
 
     def enable_logging options={}
 
-      _default = {class_name: ::ActiveLogger.history_class.to_s.split("::").last, ignore: ["created_at", "updated_at"]}.merge(options)
+      _default = {class_name: ::ActiveLogger.get_history_class.to_s.split("::").last, ignore: ["created_at", "updated_at"]}.merge(options)
 
       cattr_accessor :fields_to_ignore, :history_method, :history_value_method
 
@@ -76,13 +85,13 @@ module ActiveLogger
 
     def add_log_entry attributes, values, level=::ActiveLogger::INFO
 
-      uh = ::ActiveLogger.history_class.new(attributes)
+      uh = ::ActiveLogger.get_history_class.new(attributes)
       uh.level = level
       uh.i18n = true
 
       if !values.nil?
         values.each do |key,val|
-          ahv = ::ActiveLogger.history_value_class.new
+          ahv = ::ActiveLogger.get_history_value_class.new
           ahv.key = key.to_s
           ahv.value = val
           uh.send(self.history_value_method).send(:<<, ahv)
